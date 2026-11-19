@@ -1,0 +1,18 @@
+name: Backend tests
+on:
+  push:
+    paths: ["weather-app/backend/**", ".github/workflows/backend-tests.yml"]
+  pull_request:
+    paths: ["weather-app/backend/**", ".github/workflows/backend-tests.yml"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weather-app/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+      - run: go test ./... -race -cover
