@@ -1,0 +1,15 @@
+services:
+  api:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      CORS_ALLOWED_ORIGIN: "*"
+    ports: ["8080:8080"]
+  web:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:8080
+    ports: ["3000:80"]
+    depends_on: [api]
