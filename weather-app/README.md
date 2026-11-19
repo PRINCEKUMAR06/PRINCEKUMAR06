@@ -1,38 +1,31 @@
-# City Weather — Go API + React client
+# City Weather - Go API + React client
 
-A small full-stack weather application. The React client accepts a city name and calls a Go HTTP API. The API retrieves current conditions from OpenWeatherMap and returns a compact JSON response for the UI.
+A full-stack weather application. The React client accepts a city name and calls a Go HTTP API. The API retrieves current conditions from OpenWeatherMap and returns a compact JSON response.
 
 ## Architecture
-
 ```text
 Browser (React)
-    |  GET /api/weather?city=Hyderabad
-    v
+  | GET /api/weather?city=Hyderabad
+  v
 Go HTTP API (:8080)
-    |  GET /data/2.5/weather?q=...&units=metric
-    v
+  | GET /data/2.5/weather?q=...&units=metric
+  v
 OpenWeatherMap
 ```
 
-The backend keeps the provider API key on the server. The frontend receives only the app API base URL; never put the OpenWeatherMap key in React environment variables or browser code.
+The provider API key stays on the server. Never place it in React environment variables or browser code.
 
-## Project layout
-
-- `backend/` — Go HTTP server, provider integration, Dockerfile and handler tests
-- `frontend/` — React UI, Axios API client, CSS and Dockerfile
-- `docker-compose.yml` — local two-container development stack
-- `.github/workflows/backend-tests.yml` — Go test workflow
+## Layout
+- `backend/` - Go HTTP server, provider integration, Dockerfile and handler tests
+- `frontend/` - React UI, Axios API client, CSS and Dockerfile
+- `docker-compose.yml` - local two-container development stack
+- `.github/workflows/backend-tests.yml` - Go test workflow
 
 ## API
+- `GET /healthz` returns `{"status":"ok"}`
+- `GET /api/weather?city=Hyderabad` returns city, temperature in Celsius, condition, humidity and wind speed.
 
-### `GET /healthz`
-
-Returns `{"status":"ok"}` when the API process is responding.
-
-### `GET /api/weather?city=Hyderabad`
-
-Example success response:
-
+Example response (illustrative schema, not a live reading):
 ```json
 {
   "city": "Hyderabad",
@@ -43,63 +36,40 @@ Example success response:
 }
 ```
 
-The numbers above are an illustrative response schema, not a live weather reading.
-
 ## Run locally
+Requirements: Go 1.23+, Node.js 20+, npm and an OpenWeatherMap API key.
 
-Requirements: Go 1.23+; Node.js 20+ and npm; an OpenWeatherMap API key.
-
-### 1. Start the API
-
+Start the API:
 ```bash
 cd backend
 export OPENWEATHER_API_KEY="your_api_key"
-go test ./...
+go test ./... -race -cover
 go run .
 ```
+The API listens on `http://localhost:8080`. Optional variables: `PORT`, `OPENWEATHER_API_URL` (useful for tests), and `CORS_ALLOWED_ORIGIN`.
 
-The API listens on `http://localhost:8080` by default. Optional environment variables: `PORT`, `OPENWEATHER_API_URL` (useful for local testing), and `CORS_ALLOWED_ORIGIN`.
-
-### 2. Start the React client
-
-In a second terminal:
-
+Start the React client in another terminal:
 ```bash
 cd frontend
 cp .env.example .env
 npm install
 npm start
 ```
-
 The client uses `REACT_APP_API_BASE_URL`, defaulting to `http://localhost:8080`.
 
-## Run with Docker Compose
-
-From this directory, create `.env` from `.env.example`, add your provider key, and run:
-
+## Docker Compose
+From this directory, copy `.env.example` to `.env`, add the provider key, then:
 ```bash
 docker compose up --build
 ```
+Open `http://localhost:3000`; API health is at `http://localhost:8080/healthz`.
 
-Open `http://localhost:3000`. The API health endpoint is at `http://localhost:8080/healthz`.
+## Testing
+Go handler tests cover required input, missing provider configuration, response mapping and provider failures. They use `httptest`, so no external API key is required. GitHub Actions runs the Go test suite on relevant pushes and pull requests.
 
-## Tests and validation
+## Deployment
+Deploy API and frontend as separate services. Configure `OPENWEATHER_API_KEY` and `CORS_ALLOWED_ORIGIN` on the API service. Set `REACT_APP_API_BASE_URL` to the public API URL at frontend build time. Enable HTTPS and do not commit `.env` or provider credentials.
 
-The Go handler tests cover required input, missing provider configuration, response mapping and provider failure handling:
+This commit provides source and deployment configuration; it does not claim a live hosting deployment.
 
-```bash
-cd backend
-go test ./... -race -cover
-```
-
-The repository includes a GitHub Actions workflow for the backend test suite. No external API key is needed by the tests; the provider is simulated with `httptest`.
-
-## Deployment notes
-
-Deploy the API and frontend as separate services. Configure `OPENWEATHER_API_KEY` and `CORS_ALLOWED_ORIGIN` on the API service. Set `REACT_APP_API_BASE_URL` to the publicly reachable API base URL at frontend build time. HTTPS should be enabled for both services. Do not commit `.env` files or provider credentials.
-
-This repository contains the source and deployment configuration. A live hosting deployment is not claimed by this commit.
-
-## Data source and attribution
-
-Weather data is retrieved from [OpenWeatherMap](https://openweathermap.org/api). The project is an educational/demo application and is not intended for emergency or safety-critical decisions.
+Weather data is provided by [OpenWeatherMap](https://openweathermap.org/api). This educational/demo application is not intended for safety-critical decisions.
