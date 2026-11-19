@@ -19,7 +19,7 @@ The provider API key stays on the server. Never place it in React environment va
 - `backend/` - Go HTTP server, provider integration, Dockerfile and handler tests
 - `frontend/` - React UI, Axios API client, CSS and Dockerfile
 - `docker-compose.yml` - local two-container development stack
-- `.github/workflows/backend-tests.yml` - Go test workflow
+- `../.github/workflows/weather-backend-tests.yml` - root-level Go test workflow
 
 ## API
 - `GET /healthz` returns `{"status":"ok"}`
